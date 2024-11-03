@@ -6,7 +6,7 @@ COPY deno.json deno.lock* ./
 
 COPY . .
 
-RUN deno cache functions.ts
+RUN deno cache functions/*.ts main.ts
 
 EXPOSE 3000
 
