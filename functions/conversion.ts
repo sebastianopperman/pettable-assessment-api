@@ -28,6 +28,18 @@ export const createConversion = async (req: Request): Promise<Response> => {
 
     const supabase = getSupabaseClient();
 
+    if (utm_id) {
+      const { data: utmData, error: utmError } = await supabase
+        .from("utm_visits")
+        .select("id")
+        .eq("id", utm_id)
+        .single();
+
+      if (utmError || !utmData) {
+        return sendErrorResponse(`No UTM visit found with ID: ${utm_id}`, 400);
+      }
+    }
+
     const { data: dbData, error } = await supabase
       .from("conversions")
       .insert([
