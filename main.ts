@@ -33,8 +33,6 @@ const handler = async (req: Request): Promise<Response> => {
   const origin = req.headers.get("Origin");
   const url = new URL(req.url);
 
-  console.log(`${req.method} ${url.pathname} from ${origin}`);
-
   if (req.method === "OPTIONS") {
     return new Response(null, {
       status: 204,
@@ -59,7 +57,6 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   if (ALLOWED_ORIGIN && origin !== ALLOWED_ORIGIN) {
-    console.log(`Invalid origin: ${origin}, expected: ${ALLOWED_ORIGIN}`);
     const response = new Response(JSON.stringify({ error: "Invalid Origin" }), {
       status: 403,
       headers: { "Content-Type": "application/json" },
@@ -71,8 +68,6 @@ const handler = async (req: Request): Promise<Response> => {
     const routeHandler = functionHandlers.get(url.pathname);
 
     if (!routeHandler) {
-      console.log(`No handler found for path: ${url.pathname}`);
-      console.log("Available routes:", Array.from(functionHandlers.keys()));
       const response = new Response(JSON.stringify({ error: "Not Found" }), {
         status: 404,
         headers: { "Content-Type": "application/json" },
