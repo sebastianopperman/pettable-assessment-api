@@ -1,11 +1,9 @@
 {
-  "compilerOptions": {
-    "allowJs": true,
-    "lib": ["deno.window"],
-    "strict": true
+  "tasks": {
+    "start": "deno run --allow-net functions.ts"
   },
   "imports": {
-    "@std/": "jsr:@std/"
+    "std/": "https://deno.land/std@0.131.0/"
   },
   "lint": {
     "rules": {

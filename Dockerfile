@@ -6,6 +6,8 @@ COPY deno.json deno.lock* ./
 
 COPY . .
 
-RUN deno cache --lock=deno.lock functions.ts
+RUN deno cache functions.ts
 
-CMD ["deno", "run", "--allow-net", "main.ts"] 
+EXPOSE 3000
+
+CMD ["deno", "run", "--allow-net", "functions.ts"] 

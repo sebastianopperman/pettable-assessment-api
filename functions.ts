@@ -31,4 +31,4 @@ const handler = async (req: Request): Promise<Response> => {
   });
 };
 
-Deno.serve({ port: 8000 }, handler);
+Deno.serve({ port: 3000 }, handler);
