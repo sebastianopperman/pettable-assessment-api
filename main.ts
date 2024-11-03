@@ -11,8 +11,8 @@ for await (const { name, isFile } of Deno.readDir("./functions")) {
       "/" +
       name
         .replace(/\.ts$/, "")
-        .replace(/([A-Z])/g, "-$1")
-        .toLowerCase();
+        .replace(/([A-Z])/g, (match) => match.toLowerCase())
+        .replace(/-/g, "-");
     functionHandlers.set(route, module[Object.keys(module)[0]]);
   }
 }
@@ -31,6 +31,9 @@ const setCorsHeaders = (response: Response, origin: string): Response => {
 
 const handler = async (req: Request): Promise<Response> => {
   const origin = req.headers.get("Origin");
+  const url = new URL(req.url);
+
+  console.log(`${req.method} ${url.pathname} from ${origin}`);
 
   if (req.method === "OPTIONS") {
     return new Response(null, {
@@ -39,6 +42,7 @@ const handler = async (req: Request): Promise<Response> => {
         "Access-Control-Allow-Origin": ALLOWED_ORIGIN || "*",
         "Access-Control-Allow-Methods": "POST, OPTIONS",
         "Access-Control-Allow-Headers": "Content-Type",
+        "Access-Control-Max-Age": "86400",
       },
     });
   }
@@ -55,6 +59,7 @@ const handler = async (req: Request): Promise<Response> => {
   }
 
   if (ALLOWED_ORIGIN && origin !== ALLOWED_ORIGIN) {
+    console.log(`Invalid origin: ${origin}, expected: ${ALLOWED_ORIGIN}`);
     const response = new Response(JSON.stringify({ error: "Invalid Origin" }), {
       status: 403,
       headers: { "Content-Type": "application/json" },
@@ -62,16 +67,38 @@ const handler = async (req: Request): Promise<Response> => {
     return setCorsHeaders(response, origin || "*");
   }
 
-  const routeHandler = functionHandlers.get(new URL(req.url).pathname);
+  try {
+    const routeHandler = functionHandlers.get(url.pathname);
 
-  const response = routeHandler
-    ? await routeHandler(req)
-    : new Response(JSON.stringify({ error: "Not Found" }), {
+    if (!routeHandler) {
+      console.log(`No handler found for path: ${url.pathname}`);
+      console.log("Available routes:", Array.from(functionHandlers.keys()));
+      const response = new Response(JSON.stringify({ error: "Not Found" }), {
         status: 404,
         headers: { "Content-Type": "application/json" },
       });
+      return setCorsHeaders(response, origin || "*");
+    }
 
-  return setCorsHeaders(response, origin || "*");
+    const response = await routeHandler(req);
+    return setCorsHeaders(response, origin || "*");
+  } catch (error: unknown) {
+    const errorMessage =
+      error instanceof Error ? error.message : "Unknown error";
+    console.error(`Error processing request to ${url.pathname}:`, error);
+    const response = new Response(
+      JSON.stringify({
+        error: "Internal Server Error",
+        message: errorMessage,
+        path: url.pathname,
+      }),
+      {
+        status: 500,
+        headers: { "Content-Type": "application/json" },
+      }
+    );
+    return setCorsHeaders(response, origin || "*");
+  }
 };
 
 Deno.serve({ port: 3000 }, handler);
