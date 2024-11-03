@@ -1,15 +1,17 @@
 import { getSupabaseClient } from "../lib/supabase.ts";
+import {
+  sendErrorResponse,
+  sendSuccessResponse,
+  sendValidationError,
+} from "../lib/response-utils.ts";
 
 export const createUtmVisit = async (req: Request): Promise<Response> => {
   try {
     const { utm_source, utm_medium, utm_campaign } = await req.json();
 
     if (!utm_source || !utm_medium || !utm_campaign) {
-      return new Response(
-        JSON.stringify({
-          error: "utm_source, utm_medium, and utm_campaign are required",
-        }),
-        { status: 400, headers: { "Content-Type": "application/json" } }
+      return sendValidationError(
+        "utm_source, utm_medium, and utm_campaign are required"
       );
     }
 
@@ -19,18 +21,14 @@ export const createUtmVisit = async (req: Request): Promise<Response> => {
       .select("id")
       .single();
 
-    if (error) throw error;
+    if (error) {
+      console.error("Supabase error:", error);
+      throw error;
+    }
 
-    return new Response(JSON.stringify({ id: data.id }), {
-      status: 201,
-      headers: { "Content-Type": "application/json" },
-    });
+    return sendSuccessResponse({ id: data.id });
   } catch (error) {
-    return new Response(
-      JSON.stringify({
-        error: error instanceof Error ? error.message : "Unknown error",
-      }),
-      { status: 500, headers: { "Content-Type": "application/json" } }
-    );
+    console.error("Caught error:", error);
+    return sendErrorResponse(error);
   }
 };

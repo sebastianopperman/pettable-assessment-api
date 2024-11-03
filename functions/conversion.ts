@@ -1,20 +1,19 @@
 import { getSupabaseClient } from "../lib/supabase.ts";
+import {
+  sendErrorResponse,
+  sendSuccessResponse,
+  sendValidationError,
+} from "../lib/response-utils.ts";
 
 export const createConversion = async (req: Request): Promise<Response> => {
   try {
     const { name, email, product, utm_id } = await req.json();
 
     if (!name || !email || !product) {
-      return new Response(
-        JSON.stringify({
-          error: "name, email, and product are required",
-        }),
-        { status: 400, headers: { "Content-Type": "application/json" } }
-      );
+      return sendValidationError("name, email, and product are required");
     }
 
     const supabase = getSupabaseClient();
-    console.log("Attempting to insert conversion...");
 
     const { data, error } = await supabase
       .from("conversions")
@@ -35,27 +34,17 @@ export const createConversion = async (req: Request): Promise<Response> => {
         error.code === "23505" &&
         error.message.includes("conversions_email_key")
       ) {
-        return new Response(
-          JSON.stringify({
-            error: "A conversion with this email already exists",
-          }),
-          { status: 409, headers: { "Content-Type": "application/json" } }
+        return sendErrorResponse(
+          "A conversion with this email already exists",
+          409
         );
       }
       throw error;
     }
 
-    return new Response(JSON.stringify({ id: data.id }), {
-      status: 201,
-      headers: { "Content-Type": "application/json" },
-    });
+    return sendSuccessResponse({ id: data.id });
   } catch (error) {
     console.error("Caught error:", error);
-    return new Response(
-      JSON.stringify({
-        error: error instanceof Error ? error.message : String(error),
-      }),
-      { status: 500, headers: { "Content-Type": "application/json" } }
-    );
+    return sendErrorResponse(error);
   }
 };
