@@ -1,9 +1,9 @@
 # Pettable Assessment API
 
-[![Test Status](https://github.com/pettable/assessment-api/actions/workflows/test.yml/badge.svg)](https://github.com/pettable/assessment-api/actions)
+![Test Status](https://img.shields.io/github/actions/workflow/status/pettable/assessment-api/test.yml?branch=main)
 [![Deno Version](https://img.shields.io/badge/deno-v2.0.4-green.svg)](https://deno.land)
 
-This is a simple, lightweight REST API app that handles functions which integrates post data to the database. This keeps sensitive data out of Webflow which exposes them in the user's browser.
+This is a simple, lightweight REST API application designed to handle functions that integrate post data directly into the database. By doing so, it ensures that sensitive data is not exposed in the user's browser through Webflow, providing an additional layer of security and data protection.
 
 ## Running the Application
 
