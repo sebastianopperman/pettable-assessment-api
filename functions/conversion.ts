@@ -19,6 +19,7 @@ export const createConversion = async (req: Request): Promise<Response> => {
       { value: name, name: "name", type: "string", required: true },
       { value: email, name: "email", type: "string", required: true },
       { value: product, name: "product", type: "string", required: true },
+      { value: utm_id, name: "utm_id", type: "integer", required: false },
     ]);
 
     if (!isValid) {
