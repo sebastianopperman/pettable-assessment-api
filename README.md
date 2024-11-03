@@ -1,6 +1,6 @@
 # Pettable Assessment API
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 [![Deno Version](https://img.shields.io/badge/deno-v2.0.4-green.svg)](https://deno.land)
 
 This is a simple, lightweight REST API application designed to handle functions that integrate post data directly into the database. By doing so, it ensures that sensitive data is not exposed in the user's browser through Webflow, providing an additional layer of security and data protection.
