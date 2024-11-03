@@ -3,19 +3,34 @@ import {
   sendErrorResponse,
   sendSuccessResponse,
   sendValidationError,
+  parseJsonRequest,
 } from "../lib/response-utils.ts";
+import { validateFields } from "../lib/validation-utils.ts";
 
 export const createUtmVisit = async (req: Request): Promise<Response> => {
   try {
-    const { utm_source, utm_medium, utm_campaign } = await req.json();
+    const { data, error: parseError } = await parseJsonRequest(req);
+    if (parseError) return parseError;
 
-    if (!utm_source || !utm_medium || !utm_campaign) {
-      return sendValidationError(
-        "utm_source, utm_medium, and utm_campaign are required"
-      );
+    const payload = data as Record<string, unknown>;
+    const { utm_source, utm_medium, utm_campaign } = payload;
+
+    const { isValid, errors } = validateFields([
+      { value: utm_source, name: "utm_source", type: "string", required: true },
+      { value: utm_medium, name: "utm_medium", type: "string", required: true },
+      {
+        value: utm_campaign,
+        name: "utm_campaign",
+        type: "string",
+        required: true,
+      },
+    ]);
+
+    if (!isValid) {
+      return sendValidationError(`Validation failed: ${errors.join(", ")}`);
     }
 
-    const { data, error } = await getSupabaseClient()
+    const { data: dbData, error } = await getSupabaseClient()
       .from("utm_visits")
       .insert([{ utm_source, utm_medium, utm_campaign }])
       .select("id")
@@ -23,12 +38,15 @@ export const createUtmVisit = async (req: Request): Promise<Response> => {
 
     if (error) {
       console.error("Supabase error:", error);
-      throw error;
+      // Handle Supabase error specifically
+      return sendErrorResponse(error.message);
     }
 
-    return sendSuccessResponse({ id: data.id });
+    return sendSuccessResponse({ id: dbData.id });
   } catch (error) {
     console.error("Caught error:", error);
-    return sendErrorResponse(error);
+    return sendErrorResponse(
+      error instanceof Error ? error.message : "An unexpected error occurred"
+    );
   }
 };

@@ -3,26 +3,38 @@ import {
   sendErrorResponse,
   sendSuccessResponse,
   sendValidationError,
+  parseJsonRequest,
 } from "../lib/response-utils.ts";
+import { validateFields } from "../lib/validation-utils.ts";
 
 export const createConversion = async (req: Request): Promise<Response> => {
   try {
-    const { name, email, product, utm_id } = await req.json();
+    const { data, error: parseError } = await parseJsonRequest(req);
+    if (parseError) return parseError;
 
-    if (!name || !email || !product) {
-      return sendValidationError("name, email, and product are required");
+    const payload = data as Record<string, unknown>;
+    const { name, email, product, utm_id } = payload;
+
+    const { isValid, errors } = validateFields([
+      { value: name, name: "name", type: "string", required: true },
+      { value: email, name: "email", type: "string", required: true },
+      { value: product, name: "product", type: "string", required: true },
+    ]);
+
+    if (!isValid) {
+      return sendValidationError(`Validation failed: ${errors.join(", ")}`);
     }
 
     const supabase = getSupabaseClient();
 
-    const { data, error } = await supabase
+    const { data: dbData, error } = await supabase
       .from("conversions")
       .insert([
         {
           name,
           email,
           product,
-          ...(utm_id && { utm_visit_id: utm_id }),
+          ...(utm_id ? { utm_id } : {}),
         },
       ])
       .select("id")
@@ -39,12 +51,14 @@ export const createConversion = async (req: Request): Promise<Response> => {
           409
         );
       }
-      throw error;
+      return sendErrorResponse(error.message);
     }
 
-    return sendSuccessResponse({ id: data.id });
+    return sendSuccessResponse({ id: dbData.id });
   } catch (error) {
     console.error("Caught error:", error);
-    return sendErrorResponse(error);
+    return sendErrorResponse(
+      error instanceof Error ? error.message : "An unexpected error occurred"
+    );
   }
 };

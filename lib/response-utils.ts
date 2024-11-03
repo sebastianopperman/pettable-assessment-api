@@ -34,3 +34,30 @@ export const sendSuccessResponse = (
 export const sendValidationError = (message: string): Response => {
   return sendErrorResponse(message, 400);
 };
+
+export const parseJsonRequest = async (
+  req: Request
+): Promise<{ data: unknown; error: Response | null }> => {
+  if (!req.body) {
+    return {
+      data: null,
+      error: sendValidationError("Request body is required"),
+    };
+  }
+
+  try {
+    const data = await req.json();
+    if (typeof data !== "object" || data === null) {
+      return {
+        data: null,
+        error: sendValidationError("Invalid JSON payload"),
+      };
+    }
+    return { data, error: null };
+  } catch (_error) {
+    return {
+      data: null,
+      error: sendValidationError("Invalid JSON format"),
+    };
+  }
+};
