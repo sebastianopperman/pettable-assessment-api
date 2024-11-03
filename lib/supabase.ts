@@ -8,7 +8,7 @@ export const getSupabaseClient = () => {
   }
 
   const supabaseUrl = Deno.env.get("SUPABASE_URL");
-  const supabaseKey = Deno.env.get("SUPABASE_KEY");
+  const supabaseKey = Deno.env.get("SUPABASE_ANON_KEY");
 
   if (!supabaseUrl || !supabaseKey) {
     throw new Error("Missing Supabase environment variables");
@@ -17,7 +17,6 @@ export const getSupabaseClient = () => {
   return createClient(supabaseUrl, supabaseKey);
 };
 
-// For testing purposes only
 export const setTestClient = (client: SupabaseClient | null) => {
   clientOverride = client;
 };

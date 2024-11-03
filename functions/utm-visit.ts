@@ -38,7 +38,6 @@ export const createUtmVisit = async (req: Request): Promise<Response> => {
 
     if (error) {
       console.error("Supabase error:", error);
-      // Handle Supabase error specifically
       return sendErrorResponse(error.message);
     }
 
