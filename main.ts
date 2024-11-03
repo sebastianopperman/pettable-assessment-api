@@ -1,6 +1,19 @@
 import "@std/dotenv/load";
-import { createConversion } from "./functions/conversion.ts";
-import { createUtmVisit } from "./functions/utm-visit.ts";
+
+const functionHandlers = new Map<string, (req: Request) => Promise<Response>>();
+
+for await (const { name, isFile } of Deno.readDir("./functions")) {
+  if (isFile && name.endsWith(".ts")) {
+    const module = await import(`./functions/${name}`);
+    const route =
+      "/" +
+      name
+        .replace(/\.ts$/, "")
+        .replace(/([A-Z])/g, "-$1")
+        .toLowerCase();
+    functionHandlers.set(route, module[Object.keys(module)[0]]);
+  }
+}
 
 const handler = async (req: Request): Promise<Response> => {
   if (req.method !== "POST") {
@@ -10,19 +23,14 @@ const handler = async (req: Request): Promise<Response> => {
     });
   }
 
-  const pathname = new URL(req.url).pathname;
+  const routeHandler = functionHandlers.get(new URL(req.url).pathname);
 
-  switch (pathname) {
-    case "/utm-visit":
-      return await createUtmVisit(req);
-    case "/conversion":
-      return await createConversion(req);
-    default:
-      return new Response(JSON.stringify({ error: "Not Found" }), {
+  return routeHandler
+    ? await routeHandler(req)
+    : new Response(JSON.stringify({ error: "Not Found" }), {
         status: 404,
         headers: { "Content-Type": "application/json" },
       });
-  }
 };
 
 Deno.serve({ port: 3000 }, handler);

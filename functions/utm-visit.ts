@@ -1,12 +1,35 @@
 import { getSupabaseClient } from "../lib/supabase.ts";
 
-export const createUtmVisit = async (_req: Request): Promise<Response> => {
+export const createUtmVisit = async (req: Request): Promise<Response> => {
   try {
     const supabase = getSupabaseClient();
 
-    const { data: utmVisits, error } = await supabase
+    const body = await req.json();
+    const { utm_source, utm_medium, utm_campaign } = body;
+
+    if (!utm_source || !utm_medium || !utm_campaign) {
+      return new Response(
+        JSON.stringify({
+          error: "utm_source, utm_medium, and utm_campaign are required",
+        }),
+        {
+          status: 400,
+          headers: { "Content-Type": "application/json" },
+        }
+      );
+    }
+
+    const { data, error } = await supabase
       .from("utm_visits")
-      .select("*");
+      .insert([
+        {
+          utm_source,
+          utm_medium,
+          utm_campaign,
+        },
+      ])
+      .select("id")
+      .single();
 
     if (error) {
       return new Response(JSON.stringify({ error: error.message }), {
@@ -15,7 +38,8 @@ export const createUtmVisit = async (_req: Request): Promise<Response> => {
       });
     }
 
-    return new Response(JSON.stringify(utmVisits), {
+    return new Response(JSON.stringify({ id: data.id }), {
+      status: 201,
       headers: { "Content-Type": "application/json" },
     });
   } catch (error: unknown) {
