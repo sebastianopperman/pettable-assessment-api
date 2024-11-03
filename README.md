@@ -1,6 +1,6 @@
 # Pettable Assessment API
 
-![Test Status](https://img.shields.io/github/actions/workflow/status/pettable/assessment-api/test.yml?branch=main)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Deno Version](https://img.shields.io/badge/deno-v2.0.4-green.svg)](https://deno.land)
 
 This is a simple, lightweight REST API application designed to handle functions that integrate post data directly into the database. By doing so, it ensures that sensitive data is not exposed in the user's browser through Webflow, providing an additional layer of security and data protection.
@@ -68,3 +68,7 @@ export default async function (req: Request): Promise<Response> {
 - All endpoints **only** accept POST requests
 - Function filenames are converted to kebab-case routes (e.g., `myFunction.ts` → `/my-function`)
 - Non-POST requests will receive a 405 Method Not Allowed response
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
