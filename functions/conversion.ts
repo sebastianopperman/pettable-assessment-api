@@ -7,6 +7,16 @@ import {
 } from "../lib/response-utils.ts";
 import { validateFields } from "../lib/validation-utils.ts";
 
+/**
+ * 1.
+ * Here I parse & validate the body from the request.
+ *
+ * 2.
+ * I then check if the utm_id already exist in the
+ * /utm_visits table and handle the edge case error.
+ *
+ * 3. I then save the new conversion to the /conversion table.
+ */
 export const createConversion = async (req: Request): Promise<Response> => {
   try {
     const { data, error: parseError } = await parseJsonRequest(req);

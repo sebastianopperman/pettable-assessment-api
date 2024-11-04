@@ -7,6 +7,13 @@ import {
 } from "../lib/response-utils.ts";
 import { validateFields } from "../lib/validation-utils.ts";
 
+/**
+ * 1.
+ * Here I parse & validate the body from the request.
+ *
+ * 2.
+ * I then save the utm data to the utm_visits table.
+ */
 export const createUtmVisit = async (req: Request): Promise<Response> => {
   try {
     const { data, error: parseError } = await parseJsonRequest(req);
