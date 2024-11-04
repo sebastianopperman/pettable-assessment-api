@@ -1,7 +1,7 @@
 import { SupabaseClient } from "@supabase/supabase-js";
 
 export const mockSupabaseClient = {
-  from: (_table: string) => ({
+  from: (table: string) => ({
     insert: (data: unknown[]) => ({
       select: () => ({
         single: async () => {
@@ -21,6 +21,24 @@ export const mockSupabaseClient = {
           return {
             data: { id: 1 },
             error: null,
+          };
+        },
+      }),
+    }),
+    select: (columns?: string) => ({
+      eq: (column: string, value: unknown) => ({
+        single: async () => {
+          // For utm_visits table, return mock data
+          if (table === "utm_visits" && column === "id" && value === 1) {
+            return {
+              data: { id: 1 },
+              error: null,
+            };
+          }
+          // For non-existent UTM visits, return null
+          return {
+            data: null,
+            error: { message: "No UTM visit found" },
           };
         },
       }),
